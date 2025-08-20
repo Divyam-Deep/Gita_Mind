@@ -145,7 +145,7 @@ st.markdown(page_bg, unsafe_allow_html=True)
 
 # Title
 st.markdown(
-    f"<h1 style='text-align:center; margin-left:10px; font-size: 40px; color:white; text-shadow:2px 2px 4px black;'>{APP_TITLE}</h1>",
+    f"<h1 style='text-align:center; margin-left:15px; font-size: 40px; color:white; text-shadow:2px 2px 4px black;'>{APP_TITLE}</h1>",
     unsafe_allow_html=True
 )
 st.markdown(
