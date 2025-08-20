@@ -1,17 +1,20 @@
-streamlit>=1.32.0
-pydantic>=2.5.0
-python-dotenv>=1.0.1
+streamlit==1.32.0
+pydantic==2.5.0
+python-dotenv==1.0.1
 
 # LangChain + Groq integration
-langchain>=0.1.15
-langchain-groq>=0.0.2
-langchain-community
+langchain==0.1.15
+langchain-groq==0.0.2
+langchain-community==0.0.33
+
 # Embeddings + Vector DB
-sentence-transformers>=2.5.1
-chromadb>=0.4.22
-faiss-cpu>=1.7.4
+sentence-transformers==2.2.2
+torch==2.2.1
+chromadb==0.4.22
+faiss-cpu==1.7.4
+
 # PDF loader
-pypdf>=3.17.4
+pypdf==3.17.4
 
 # Sentiment analysis
-vaderSentiment>=3.3.2
+vaderSentiment==3.3.2
