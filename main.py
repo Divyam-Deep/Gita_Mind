@@ -38,7 +38,7 @@ class RAGBackend:
     def __init__(self):
         self.llm = ChatGroq(
             temperature=0,
-            groq_api_key=os.getenv("GROQ_API_KEY", "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"),
+            groq_api_key=os.getenv("GROQ_API_KEY"),
             model_name="llama-3.3-70b-versatile"
         )
 
