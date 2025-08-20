@@ -48,7 +48,7 @@ class RAGBackend:
         if not os.path.exists(db_path):
             self.vector_db = self.create_vector_db(pdf_folder_path, db_path)
         else:
-            embeddings = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
+            embeddings = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2", model_kwargs={"device": "cpu"})
             self.vector_db = FAISS.load_local(db_path, embeddings, allow_dangerous_deserialization=True)
 
         self.qa_chain = self.setup_qa_chain(self.vector_db, self.llm)
@@ -60,7 +60,7 @@ class RAGBackend:
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
         texts = text_splitter.split_documents(documents)
 
-        embeddings = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
+        embeddings = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2", model_kwargs={"device": "cpu"})
         vector_db = FAISS.from_documents(texts, embeddings)
         vector_db.save_local(db_path)
         return vector_db
