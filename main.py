@@ -199,9 +199,9 @@ if user_input:
         try:
             sentiment, response, sources = backend.answer(query=user_input, history=history_objs)
 
-            sentiment_line = f"I detected your sentiment as **{sentiment}**."
-            st.markdown(sentiment_line)
-            st.session_state.messages.append({"role": "assistant", "content": sentiment_line})
+            # sentiment_line = f"I detected your sentiment as **{sentiment}**."
+            # st.markdown(sentiment_line)
+            # st.session_state.messages.append({"role": "assistant", "content": sentiment_line})
 
             final_text = stream_text(response)
             st.session_state.messages.append({"role": "assistant", "content": final_text})
