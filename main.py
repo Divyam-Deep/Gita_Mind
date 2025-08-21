@@ -61,6 +61,7 @@ class RAGBackend:
         texts = text_splitter.split_documents(documents)
 
         embeddings = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2", model_kwargs={"device": "cpu"})
+        embeddings.client = SentenceTransformer("all-MiniLM-L6-v2", device="cpu")
         vector_db = FAISS.from_documents(texts, embeddings)
         vector_db.save_local(db_path)
         return vector_db
