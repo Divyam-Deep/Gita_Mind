@@ -124,6 +124,34 @@ def stream_text(text: str, delay: float = 0.015):
 
 # ---------- UI ----------
 st.set_page_config(page_title=APP_TITLE, page_icon="🧘", layout="wide")
+
+# ---------- Welcome popup (shows once, click outside to close) ----------
+if "welcome_shown" not in st.session_state:
+    st.session_state.welcome_shown = False
+
+# Dialog decorator (no 'dismissible' or 'on_dismiss' so it works on older versions)
+@st.dialog("ㅤ")
+def _welcome_dialog():
+    st.markdown(
+        """
+        <style>
+        .center-box {
+            text-align: center;
+            line-height: 1.6;
+            padding: 10px;
+            margin-top: -20px;
+        }
+        </style>
+        <div class="center-box">
+            <p style="font-size:16px;">
+                When you feel lost, heavy inside, or just need someone to guide you, this companion is here to listen and bring peace with the wisdom of the Bhagavad Gita. Just have faith in God. No matter how heavy the moment feels now, it will eventually lead to something better.
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 init_session_state()
 backend = RAGBackend()
 
