@@ -150,6 +150,11 @@ def _welcome_dialog():
         """,
         unsafe_allow_html=True,
     )
+# Open the dialog exactly once per session
+if not st.session_state.welcome_shown:
+    _welcome_dialog()
+    # mark as shown so it won't pop again on future reruns
+    st.session_state.welcome_shown = True
 
 
 init_session_state()
