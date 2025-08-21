@@ -192,7 +192,7 @@ for m in st.session_state.messages:
         st.markdown(m["content"])
 
 # Chat input
-user_input = st.chat_input("Ask a question inspired by Bhagavad Gita…")
+user_input = st.chat_input("Feel free to share what’s on your mind…")
 if user_input:
     with st.chat_message("user"):
         st.markdown(user_input)
