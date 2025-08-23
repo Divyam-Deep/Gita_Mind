@@ -138,8 +138,13 @@ def _welcome_dialog():
         .center-box {
             text-align: center;
             line-height: 1.6;
-            padding: 10px;
+            padding: 20px;
             margin-top: -20px;
+            background-color: white;
+            color: black;
+            border-radius: 10px;
+            align-items: center;
+            justify-content: center;
         }
         </style>
         <div class="center-box">
@@ -161,17 +166,35 @@ init_session_state()
 backend = RAGBackend()
 
 # Background image
-page_bg = """
+text_color = "black" if st.get_option("theme.base") == "light" else "white"
+page_bg = f"""
 <style>
-[data-testid="stAppViewContainer"] {
+[data-testid="stAppViewContainer"] {{
     background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),url("https://i.pinimg.com/736x/98/b1/4c/98b14c007b034b84499470784b0288a5.jpg");
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
-}
-[data-testid="stHeader"] {
+}}
+[data-testid="stHeader"] {{
     background: rgba(0,0,0,0);
-}
+}}
+
+/* Main page text (titles, subtitles, markdown) */
+body, .css-1d391kg, .stMarkdown, .st-bk, .stButton button {{
+    color: {text_color} !important;
+}}
+
+/* Chat bubbles - always white */
+.stChatMessage {{
+    color: white !important;
+    background-color: rgba(0,0,0,0.5) !important;
+}}
+
+/* Input box text - always white */
+.stTextInput input, .stTextArea textarea {{
+    color: white !important;
+    background-color: rgba(0,0,0,0.3) !important;
+}}
 </style>
 """
 st.markdown(page_bg, unsafe_allow_html=True)
@@ -182,7 +205,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 st.markdown(
-    f"<div style='text-align:center; font-size:13px; color:white; text-shadow:2px 2px 4px black;'>{APP_SUBTITLE}</div>",
+    f"<div style='text-align:center; font-size:15px; color:white; text-shadow:2px 2px 4px black;'>{APP_SUBTITLE}</div>",
     unsafe_allow_html=True
 )
 
@@ -192,7 +215,7 @@ for m in st.session_state.messages:
         st.markdown(m["content"])
 
 # Chat input
-user_input = st.chat_input("I am here for you, feel free to share...")
+user_input = st.chat_input("I am here for you, feel free to share...", key="user_input")
 if user_input:
     with st.chat_message("user"):
         st.markdown(user_input)
