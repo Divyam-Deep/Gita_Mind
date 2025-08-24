@@ -126,8 +126,8 @@ def stream_text(text: str, delay: float = 0.015):
 st.set_page_config(page_title=APP_TITLE, page_icon="🧘", layout="wide")
 
 # ------Google Analytics-------
-GA_ID = st.secrets["google_analytics"]["GA_ID"]
-
+# GA_ID = st.secrets["google_analytics"]["GA_ID"]
+GA_ID = "G-2Q3QQCSB2F"  # temporarily hardcode
 ga_script = f"""
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id={GA_ID}"></script>
