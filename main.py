@@ -125,6 +125,23 @@ def stream_text(text: str, delay: float = 0.015):
 # ---------- UI ----------
 st.set_page_config(page_title=APP_TITLE, page_icon="🧘", layout="wide")
 
+# ------Google Analytics-------
+GA_ID = st.secrets["google_analytics"]["GA_ID"]
+
+ga_script = f"""
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id={GA_ID}"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){{dataLayer.push(arguments);}}
+  gtag('js', new Date());
+  gtag('config', '{GA_ID}');
+</script>
+"""
+
+st.markdown(ga_script, unsafe_allow_html=True)
+
+
 # ---------- Welcome popup (shows once, click outside to close) ----------
 if "welcome_shown" not in st.session_state:
     st.session_state.welcome_shown = False
