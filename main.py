@@ -252,7 +252,7 @@ def _welcome_dialog():
     )
 # Open the dialog exactly once per session
 if not st.session_state.welcome_shown:
-   try:
+    try:
         _welcome_dialog()
     except Exception:
         # in case st.dialog isn't available in user's streamlit version
