@@ -2,9 +2,15 @@ from __future__ import annotations
 import os
 import time
 from typing import List, Dict, Optional, Tuple
+import base64
+from hashlib import md5
 import streamlit as st
 from pydantic import BaseModel
 from dotenv import load_dotenv
+import asyncio
+import edge_tts
+from langdetect import detect
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 # --- LangChain & LLM imports ---
 from langchain_groq import ChatGroq
@@ -112,7 +118,9 @@ Chatbot:"""
 def init_session_state():
     if "messages" not in st.session_state:
         st.session_state.messages: List[Dict[str, str]] = []
-
+    if "welcome_shown" not in st.session_state:
+        st.session_state.welcome_shown = False
+        
 def stream_text(text: str, delay: float = 0.015):
     placeholder = st.empty()
     acc = ""
@@ -122,24 +130,95 @@ def stream_text(text: str, delay: float = 0.015):
         time.sleep(delay)
     return acc
 
+#-------post-process------------
+def prepare_for_tts(text: str) -> str:
+    """
+    Clean and enhance text for TTS output only.
+    - Adds pauses after full stops and commas.
+    - Converts "..." into longer pauses.
+    - Keeps the spiritual calm style.
+    """
+    processed = text.strip()
+
+    # Ensure full stops have a short pause
+    processed = processed.replace(". ", ". <break time='600ms'/> ")
+
+    # Ensure commas have shorter pauses
+    processed = processed.replace(", ", ", <break time='400ms'/> ")
+
+    # Ellipses → longer meditative pause
+    processed = processed.replace("...", "<break time='1000ms'/>")
+
+    return processed
+
+
+# --- TTS Helpers with caching ---
+TTS_DIR = "./tts_cache"
+os.makedirs(TTS_DIR, exist_ok=True)
+
+def text_to_speech(text: str, voice: str = "hi-IN-MadhurNeural") -> str:
+    """
+    Generate (and cache) TTS mp3 using Microsoft Edge TTS.
+    Returns local filepath.
+    """
+    fid = md5((voice + "|" + text).encode("utf-8")).hexdigest()[:20]
+    filename = os.path.join(TTS_DIR, f"tts_{fid}.mp3")
+
+    if not os.path.exists(filename):
+        async def _generate():
+            communicate = edge_tts.Communicate(
+                text,
+                voice=voice,
+                rate="-1%",   # slow & calm
+                pitch="-10Hz"  # deep tone
+            )
+            await communicate.save(filename)
+
+        asyncio.run(_generate())
+
+    return filename
+
+
+def get_audio_html_from_file(file_path: str, key: int) -> str:
+    """Return the audio element + clickable icon (base64 embedded source)."""
+    with open(file_path, "rb") as f:
+        data = f.read()
+    b64 = base64.b64encode(data).decode()
+    # audio element + icon; stopAllAudio is defined globally below
+    return f"""
+    <audio id="audio_{key}" 
+           onplay="document.getElementById('icon_{key}').classList.add('pulse');"
+           onended="document.getElementById('icon_{key}').classList.remove('pulse');">
+        <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
+    </audio>
+    <span id="icon_{key}" style="cursor:pointer; font-size:22px; color:black; margin-left:6px;"
+          onclick="stopAllAudio('{key}'); document.getElementById('audio_{key}').play();">🔊</span>
+    """
+
 # ---------- UI ----------
 st.set_page_config(page_title=APP_TITLE, page_icon="🧘", layout="wide")
 
+# Initialize session state BEFORE reading from it (fixes the AttributeError)
+init_session_state()
+
 # ------Google Analytics-------
-GA_ID = st.secrets["google_analytics"]["GA_ID"]
-ga_script = f"""
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id={GA_ID}"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){{dataLayer.push(arguments);}}
-  gtag('js', new Date());
-  gtag('config', '{GA_ID}');
-</script>
-"""
-
-st.markdown(ga_script, unsafe_allow_html=True)
-
+try:
+    GA_ID = st.secrets["google_analytics"]["GA_ID"]
+    ga_script = f"""
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id={GA_ID}"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){{dataLayer.push(arguments);}}
+      gtag('js', new Date());
+      gtag('config', '{GA_ID}');
+    </script>
+    """
+    
+    st.markdown(ga_script, unsafe_allow_html=True)
+except Exception:
+    # no GA configured — just continue
+    pass
 
 # ---------- Welcome popup (shows once, click outside to close) ----------
 if "welcome_shown" not in st.session_state:
@@ -173,13 +252,12 @@ def _welcome_dialog():
     )
 # Open the dialog exactly once per session
 if not st.session_state.welcome_shown:
-    _welcome_dialog()
-    # mark as shown so it won't pop again on future reruns
+   try:
+        _welcome_dialog()
+    except Exception:
+        # in case st.dialog isn't available in user's streamlit version
+        pass
     st.session_state.welcome_shown = True
-
-
-init_session_state()
-backend = RAGBackend()
 
 # Background image
 text_color = "black" if st.get_option("theme.base") == "light" else "white"
@@ -225,10 +303,54 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+# ---------- Global CSS + JS for audio control (only once) ----------
+GLOBAL_AUDIO_CSS_JS = """
+<style>
+    .pulse {
+        animation: pulse-animation 1s infinite;
+        transform-origin: center;
+    }
+    @keyframes pulse-animation {
+        0% { transform: scale(1); color: orange; }
+        50% { transform: scale(1.25); color: red; }
+        100% { transform: scale(1); color: orange; }
+    }
+</style>
+
+<script>
+    function stopAllAudio(currentKey) {
+        var audios = document.querySelectorAll("audio");
+        var icons = document.querySelectorAll("span[id^='icon_']");
+        audios.forEach(function(audio) {
+            if (audio.id !== "audio_" + currentKey) {
+                audio.pause();
+                audio.currentTime = 0;
+            }
+        });
+        icons.forEach(function(icon) {
+            if (icon.id !== "icon_" + currentKey) {
+                icon.classList.remove("pulse");
+            }
+        });
+    }
+</script>
+"""
+st.markdown(GLOBAL_AUDIO_CSS_JS, unsafe_allow_html=True)
+
+# ---------- Initialize backend (this may take a moment) ----------
+backend = RAGBackend()
+
 # Display past messages
-for m in st.session_state.messages:
+for i, m in enumerate(st.session_state.messages):
     with st.chat_message(m["role"]):
         st.markdown(m["content"])
+        if m["role"] == "assistant":
+            try:
+                audio_file = text_to_speech(m["content"])
+                with open(audio_file, "rb") as f:
+                    st.audio(f.read(), format="audio/mp3")
+            except Exception:
+                pass
 
 # Chat input
 user_input = st.chat_input("I am here for you, feel free to share...", key="user_input")
@@ -250,5 +372,14 @@ if user_input:
             final_text = stream_text(response)
             st.session_state.messages.append({"role": "assistant", "content": final_text})
 
+            # show speaker icon right away for this assistant message
+            # the index of this assistant message is len(messages)-1
+            try:
+                audio_file = text_to_speech(final_text)
+                with open(audio_file, "rb") as f:
+                    st.audio(f.read(), format="audio/mp3")
+            except Exception:
+                pass
+                
         except Exception as e:
             st.error(f"Error: {e}")
