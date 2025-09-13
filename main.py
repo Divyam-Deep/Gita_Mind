@@ -54,7 +54,10 @@ class RAGBackend:
         if not os.path.exists(db_path):
             self.vector_db = self.create_vector_db(pdf_folder_path, db_path)
         else:
-            embeddings = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
+            embeddings = SentenceTransformerEmbeddings(
+                model_name="all-MiniLM-L6-v2",
+                model_kwargs={"device": "cpu"}
+            )
             self.vector_db = FAISS.load_local(db_path, embeddings, allow_dangerous_deserialization=True)
 
         self.qa_chain = self.setup_qa_chain(self.vector_db, self.llm)
