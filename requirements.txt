@@ -1,22 +1,31 @@
-streamlit>=1.32.0
-pydantic>=2.5.0
-python-dotenv>=1.0.1
-edge-tts>=6.1.11
-langdetect>=1.0.9
-# LangChain + Groq integration
-langchain>=0.1.15
-langchain-groq>=0.0.2
-langchain-community
-# Embeddings + Vector DB
-sentence-transformers>=2.5.1
-chromadb>=0.4.22
-faiss-cpu>=1.7.4
-# PDF loader
-pypdf>=3.17.4
-# Sentiment analysis
-vaderSentiment>=3.3.2
-# --- Voice Features ---
-SpeechRecognition>=3.9.0
-gTTS>=2.4.3
-pydub>=0.25.1
-streamlit-mic-recorder
+# Core
+streamlit==1.41.1
+pydantic==2.11.7
+python-dotenv==1.1.1
+
+# Voice features
+edge-tts==7.2.1
+SpeechRecognition==3.14.3
+gTTS==2.5.4
+pydub==0.25.1
+streamlit_mic_recorder==0.0.8
+
+# PDF & Document loaders
+pypdf==6.0.0
+PyPDF2==3.0.1
+
+# LangChain
+langchain==0.3.27
+langchain-groq==0.3.7
+langchain-community==0.3.27
+sentence-transformers==5.1.0
+chromadb==1.0.20
+faiss-cpu==1.12.0
+
+# NLP
+vaderSentiment==3.3.2
+langdetect==1.0.9
+
+# Optional (if you use embeddings / vectors)
+unstructured==0.18.14
+unstructured-client==0.42.3
