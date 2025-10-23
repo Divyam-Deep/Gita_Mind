@@ -17,7 +17,8 @@ from langchain_groq import ChatGroq
 from langchain_community.embeddings import SentenceTransformerEmbeddings
 from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader
 from langchain_community.vectorstores import FAISS
-from langchain.chains.retrieval_qa.base import RetrievalQA
+from langchain.chains import create_retrieval_chain
+from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.prompts import PromptTemplate
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
@@ -83,12 +84,11 @@ User: {question}
 Chatbot:"""
         PROMPT = PromptTemplate(template=prompt_templates, input_variables=['context', 'question'])
 
-        qa_chain = RetrievalQA.from_chain_type(
-            llm=llm,
-            chain_type="stuff",
-            retriever=retriever,
-            chain_type_kwargs={"prompt": PROMPT}
-        )
+        # Step 1: Create a document-combining chain
+        combine_docs_chain = create_stuff_documents_chain(llm, PROMPT)
+
+        # Step 2: Build the retrieval chain
+        qa_chain = create_retrieval_chain(retriever, combine_docs_chain)
         return qa_chain
 
     def analyze_sentiment(self, text):
