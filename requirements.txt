@@ -4,8 +4,9 @@ python-dotenv>=1.0.1
 edge-tts>=6.1.11
 langdetect>=1.0.9
 # LangChain + Groq integration
-langchain==0.0.350
+langchain>=0.1.15
 langchain-groq>=0.0.2
+langchain-community
 # Embeddings + Vector DB
 sentence-transformers>=2.5.1
 chromadb>=0.4.22
