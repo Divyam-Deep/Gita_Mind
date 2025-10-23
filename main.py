@@ -84,11 +84,12 @@ User: {question}
 Chatbot:"""
         PROMPT = PromptTemplate(template=prompt_templates, input_variables=['context', 'question'])
 
-        # Step 1: Create a document-combining chain
-        combine_docs_chain = create_stuff_documents_chain(llm, PROMPT)
-
-        # Step 2: Build the retrieval chain
-        qa_chain = create_retrieval_chain(retriever, combine_docs_chain)
+        qa_chain = RetrievalQA.from_chain_type(
+            llm=llm,
+            chain_type="stuff",
+            retriever=retriever,
+            chain_type_kwargs={"prompt": PROMPT}
+        )
         return qa_chain
 
     def analyze_sentiment(self, text):
