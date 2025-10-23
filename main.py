@@ -14,11 +14,10 @@ from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 # --- LangChain & LLM imports ---
 from langchain_groq import ChatGroq
-from langchain_community.embeddings import SentenceTransformerEmbeddings
-from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader
-from langchain_community.vectorstores import FAISS
-from langchain.chains import create_retrieval_chain
-from langchain.chains.combine_documents import create_stuff_documents_chain
+from langchain.embeddings import SentenceTransformerEmbeddings
+from langchain.document_loaders import PyPDFLoader, DirectoryLoader
+from langchain.vectorstores import FAISS
+from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
